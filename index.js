@@ -30,6 +30,8 @@ const port = new SerialPort({ path: serial, baudRate: 9600 })
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 port.pipe(parser)
 
+port.write(`0,0,${isOnline ? 1 : 0},*`)
+
 const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`)
 const mqttTopic = "EWS.telemetry"
 
@@ -74,7 +76,6 @@ mqttClient.on('message', (topic, message) => {
     console.log(`${new Date().toLocaleString()} : Message received on topic: ${topic}`);
 
     let response = JSON.parse(message)
-
     console.log(`Status Siaga: ${response.tma_level}, Status Buzzer: ${response.tma_level === 1 ? 1 : 0}, Status Internet: ${isOnline ? 1 : 0}`);
 
     let command = `${response.tma_level},${response.tma_level === 1 ? 1 : 0},${isOnline ? 1 : 0},*`
