@@ -20,12 +20,15 @@ checkInternetConnection()
 setInterval(checkInternetConnection, 1000 * 60)
 
 const SerialPort = serialport.SerialPort
+const mqttHost = process.env.MQTT_BROKER
+const mqttPort = process.env.MQTT_PORT
+const serial = process.env.PORT
 
-const port = new SerialPort({ path: '/dev/ttyUSB1', baudRate: 9600 })
+const port = new SerialPort({ path: serial, baudRate: 9600 })
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 port.pipe(parser)
 
-const mqttClient = mqtt.connect("mqtt://193.168.195.119:1883")
+const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`)
 const mqttTopic = "EWS.telemetry"
 
 parser.on('data', data => {
