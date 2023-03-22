@@ -15,6 +15,8 @@ const checkInternetConnection = () => {
     })
 }
 
+checkInternetConnection()
+
 setInterval(checkInternetConnection, 1000 * 60)
 
 const SerialPort = serialport.SerialPort
@@ -56,7 +58,9 @@ mqttClient.on('message', (topic, message) => {
 
     let response = JSON.parse(message)
 
-    let command = `${response.tma_level},${response.tma_level > 1 ? 1 : 0},${isOnline ? 1 : 0},*`
+    console.log(`Status Siaga: ${response.tma_level}, Status Buzzer: ${response.tma_level === 1 ? 1 : 0}, Status Internet: ${isOnline ? 1 : 0}`);
+
+    let command = `${response.tma_level},${response.tma_level === 1 ? 1 : 0},${isOnline ? 1 : 0},*`
 
     port.write(command)
 })
