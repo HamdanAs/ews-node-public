@@ -67,6 +67,10 @@ const telemetryCallback = (response) => {
 
     buzzerTimeout = setTimeout(() => {
         buzzerOff = true
+
+        let command = `${response.tma_level},0,1,*`
+
+        port.write(command)
     }, settings.timer_alarm * 1000);
 }
 
@@ -78,7 +82,7 @@ const settingsCallback = (response) => {
     buzzerOff = true
 
     buzzerTimeout = setTimeout(() => {
-        buzzerOff = true
+        buzzerOff = false
     }, settings.timer_alarm * 1000);
 }
 
