@@ -3,6 +3,8 @@ const { ReadlineParser } = require("@serialport/parser-readline");
 const mqtt = require('mqtt')
 const http = require('http')
 
+require('dotenv').config()
+
 let isOnline = false
 
 const checkInternetConnection = () => {
