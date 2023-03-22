@@ -32,6 +32,18 @@ parser.on('data', data => {
     console.log(new Date().toLocaleString() + " : Data received from arduino:", data);
 })
 
+port.on('open', () => {
+    console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
+})
+
+port.on('close', () => {
+    console.log(new Date().toLocaleString() + " : [SERIAL PORT] Disconnected . . .");
+})
+
+port.on('error', err => {
+    console.log(new Date().toLocaleString() + " : [SERIAL PORT] Error:", err);
+})
+
 mqttClient.on("connect", () => {
     console.log(new Date().toLocaleString() + " : Connected to MQTT Broker");
     mqttClient.subscribe(mqttTopic)
@@ -48,7 +60,7 @@ mqttClient.on('close', () => {
 mqttClient.on('disconnect', () => {
     console.log(new Date().toLocaleString() + " : MQTT Disconnected");
 })
-
+ 
 mqttClient.on('reconnect', () => {
     console.log(new Date().toLocaleString() + " : MQTT Reconnecting . . . ");
 })
