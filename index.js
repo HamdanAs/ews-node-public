@@ -55,6 +55,7 @@ const telemetryTopic = "EWS.telemetry"
 const settingsTopic = "EWS.Settings." + serialNumber
 
 let buzzerTimeout
+let buzzerDelay
 
 const telemetryCallback = (response) => {
     console.log(`${new Date().toLocaleString()} : [MQTT] Status Siaga: ${response.tma_level}, Status Buzzer: ${response.tma_level === 1 ? 1 : 0}, Status Internet: ${isOnline ? 1 : 0}`);
@@ -66,24 +67,23 @@ const telemetryCallback = (response) => {
     buzzerOff = false;
 
     buzzerTimeout = setTimeout(() => {
-        buzzerOff = true
-
         let command = `${response.tma_level},0,1,*`
 
         port.write(command)
     }, settings.timer_alarm * 1000);
+
+    buzzerDelay = setTimeout(() => {
+        buzzerOff = true
+    }, settings.delay_alarm * 60000)
 }
 
 const settingsCallback = (response) => {
     settings = response.settings
 
     clearTimeout(buzzerTimeout)
+    clearTimeout(buzzerDelay)
 
     buzzerOff = true
-
-    buzzerTimeout = setTimeout(() => {
-        buzzerOff = false
-    }, settings.timer_alarm * 1000);
 }
 
 parser.on('data', data => {
@@ -135,6 +135,8 @@ mqttClient.on('message', (topic, message) => {
 
         telemetryCallback(response)
     } else if (topic === settingsTopic) {
+        console.log(response);
+
         settingsCallback(response)
     }
 })
