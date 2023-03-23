@@ -90,7 +90,7 @@ const telemetryCallback = (response) => {
         }, settings.timer_alarm * 1000);
     }
 
-    if (!delayIsTicking) {
+    if (!delayIsTicking && turnOnBuzzer === 1) {
         delayIsTicking = true
 
         buzzerDelay = setTimeout(() => {
