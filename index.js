@@ -36,7 +36,7 @@ const checkInternetConnection = () => {
     http.get("http://www.google.com/images/icons/product/chrome-48.png", res => {
         isOnline = res.statusCode === 200
 
-        port.write(`${turnOnIndicator},${turnOnBuzzer},${isOnline ? 1 : 0},*`)
+        port.write(`${turnOnIndicator},0,${isOnline ? 1 : 0},*`)
 
         console.log(new Date().toLocaleString() + " : [NODEJS] Koneksi Internet:", isOnline);
     }).on('error', err => {
@@ -58,6 +58,8 @@ const settingsTopic = "EWS.Settings." + serialNumber
 
 let buzzerTimeout
 let buzzerDelay
+let timeoutIsTicking = false
+let delayIsTicking = false
 
 const telemetryCallback = (response) => {
     console.log(`${new Date().toLocaleString()} : [MQTT] Status Siaga: ${response.tma_level}, Status Buzzer: ${response.tma_level === 1 ? 1 : 0}, Status Internet: ${isOnline ? 1 : 0}`);
@@ -71,15 +73,23 @@ const telemetryCallback = (response) => {
 
     buzzerOff = false;
 
-    buzzerTimeout = setTimeout(() => {
-        let command = `${turnOnIndicator},0,1,*`
+    if (!timeoutIsTicking) {
+        buzzerTimeout = setTimeout(() => {
+            let command = `${turnOnIndicator},0,1,*`
+    
+            port.write(command)
+    
+            clearTimeout(buzzerTimeout)
+        }, settings.timer_alarm * 1000);
+    }
 
-        port.write(command)
-    }, settings.timer_alarm * 1000);
-
-    buzzerDelay = setTimeout(() => {
-        buzzerOff = true
-    }, settings.delay_alarm * 60000)
+    if (!delayIsTicking) {
+        buzzerDelay = setTimeout(() => {
+            buzzerOff = true
+    
+            clearTimeout(buzzerDelay)
+        }, settings.delay_alarm * 60000)
+    }
 }
 
 const settingsCallback = (response) => {
