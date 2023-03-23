@@ -63,6 +63,9 @@ let delayIsTicking = false
 
 const telemetryCallback = (response) => {
     console.log(`${new Date().toLocaleString()} : [MQTT] Status Siaga: ${response.tma_level}, Status Buzzer: ${response.tma_level === 1 ? 1 : 0}, Status Internet: ${isOnline ? 1 : 0}`);
+    console.log(`${new Date().toLocaleString()} : [MQTT] Timeout Buzzer Dimulai: ${timeoutIsTicking}`)
+    console.log(`${new Date().toLocaleString()} : [MQTT] Delay Buzzer Dimulai: ${delayIsTicking}`)
+
 
     turnOnIndicator = response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : (response.tma_level === 4 ? 0 : 2))
     turnOnBuzzer = (response.tma_level === 1 && buzzerOff) ? 1 : 0
@@ -74,22 +77,26 @@ const telemetryCallback = (response) => {
     buzzerOff = false;
 
     if (!timeoutIsTicking) {
+        timeoutIsTicking = true
+
         buzzerTimeout = setTimeout(() => {
             let command = `${turnOnIndicator},0,1,*`
     
             port.write(command)
-    
-            timeoutIsTicking = !timeoutIsTicking
+
+            timeoutIsTicking = false
 
             clearTimeout(buzzerTimeout)
         }, settings.timer_alarm * 1000);
     }
 
     if (!delayIsTicking) {
+        delayIsTicking = true
+
         buzzerDelay = setTimeout(() => {
             buzzerOff = true
 
-            delayIsTicking = !delayIsTicking
+            delayIsTicking = false
     
             clearTimeout(buzzerDelay)
         }, settings.delay_alarm * 60000)
@@ -106,7 +113,7 @@ const settingsCallback = (response) => {
 }
 
 parser.on('data', data => {
-    console.log(new Date().toLocaleString() + " : Data received from arduino:", data);
+    console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
 })
 
 port.on('open', () => {
