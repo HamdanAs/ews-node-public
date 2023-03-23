@@ -65,7 +65,7 @@ const telemetryCallback = (response) => {
     console.log(`${new Date().toLocaleString()} : [MQTT] Status Siaga: ${response.tma_level}, Status Buzzer: ${response.tma_level === 1 ? 1 : 0}, Status Internet: ${isOnline ? 1 : 0}`);
     console.log(`${new Date().toLocaleString()} : [MQTT] Timeout Buzzer Dimulai: ${timeoutIsTicking}`)
     console.log(`${new Date().toLocaleString()} : [MQTT] Delay Buzzer Dimulai: ${delayIsTicking}`)
-
+    console.log(`${new Date().toLocaleString()} : [MQTT] Status Buzzer: ${buzzerOff ? "Sedang OFF" : "Sedang ON"}`)
 
     turnOnIndicator = response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : (response.tma_level === 4 ? 0 : 2))
     turnOnBuzzer = (response.tma_level === 1 && buzzerOff) ? 1 : 0
@@ -85,6 +85,8 @@ const telemetryCallback = (response) => {
             port.write(command)
 
             timeoutIsTicking = false
+
+            buzzerOff = true
 
             clearTimeout(buzzerTimeout)
         }, settings.timer_alarm * 1000);
