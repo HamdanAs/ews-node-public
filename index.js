@@ -79,6 +79,8 @@ const telemetryCallback = (response) => {
     
             port.write(command)
     
+            timeoutIsTicking = !timeoutIsTicking
+
             clearTimeout(buzzerTimeout)
         }, settings.timer_alarm * 1000);
     }
@@ -86,6 +88,8 @@ const telemetryCallback = (response) => {
     if (!delayIsTicking) {
         buzzerDelay = setTimeout(() => {
             buzzerOff = true
+
+            delayIsTicking = !delayIsTicking
     
             clearTimeout(buzzerDelay)
         }, settings.delay_alarm * 60000)
