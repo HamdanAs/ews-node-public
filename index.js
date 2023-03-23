@@ -86,8 +86,6 @@ const telemetryCallback = (response) => {
 
             timeoutIsTicking = false
 
-            buzzerOff = true
-
             clearTimeout(buzzerTimeout)
         }, settings.timer_alarm * 1000);
     }
