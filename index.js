@@ -111,7 +111,7 @@ const settingsCallback = (response) => {
 }
 
 parser.on('data', data => {
-    console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
+    // console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
 })
 
 port.on('open', async () => {
