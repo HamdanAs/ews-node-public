@@ -66,7 +66,7 @@ const telemetryCallback = (response) => {
     console.log(`${new Date().toLocaleString()} : [MQTT] Status Buzzer: ${buzzerOff ? "Sedang OFF" : "Sedang ON"}`)
 
     turnOnIndicator = response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : (response.tma_level === 4 ? 0 : 2))
-    turnOnBuzzer = (turnOnIndicator === 3 && buzzerOff) ? 1 : 0
+    turnOnBuzzer = (response.tma_level === 1 && buzzerOff) ? 1 : 0
 
     let command = `${turnOnIndicator},${turnOnBuzzer},1,*`
 
