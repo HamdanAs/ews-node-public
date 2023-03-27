@@ -117,6 +117,6 @@ port.on('error', err => {
     port.end()
 })
 
-console.log(new Date().toLocaleString() + " : [TEST] Error: Memulai Skema Pengetesan 1");
+console.log(new Date().toLocaleString() + " : [TEST] Memulai Skema Pengetesan 1");
 
 setInterval(telemetryCallback, 1000 * 60)
