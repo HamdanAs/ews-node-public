@@ -18,13 +18,11 @@ let buzzerOff = true
 let turnOnIndicator = 0
 let turnOnBuzzer = 0
 
-const getSetting = () => {
-    fetch(`${backendUrl}/public-node/setting/${serialNumber}`)
+const getSetting = async () => {
+    await fetch(`${backendUrl}/public-node/setting/${serialNumber}`)
         .then(res => res.json())
         .then(res => settings = res.settings)
 }
-
-getSetting()
 
 const port = new SerialPort({ path: serial, baudRate: 9600 })
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
@@ -68,7 +66,7 @@ const telemetryCallback = (response) => {
     console.log(`${new Date().toLocaleString()} : [MQTT] Status Buzzer: ${buzzerOff ? "Sedang OFF" : "Sedang ON"}`)
 
     turnOnIndicator = response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : (response.tma_level === 4 ? 0 : 2))
-    turnOnBuzzer = (response.tma_level === 1 && buzzerOff) ? 1 : 0
+    turnOnBuzzer = (turnOnIndicator === 3 && buzzerOff) ? 1 : 0
 
     let command = `${turnOnIndicator},${turnOnBuzzer},1,*`
 
@@ -87,7 +85,7 @@ const telemetryCallback = (response) => {
             timeoutIsTicking = false
 
             clearTimeout(buzzerTimeout)
-        }, settings.timer_alarm * 1000);
+        }, parseInt(settings.timer_alarm) * 1000);
     }
 
     if (!delayIsTicking && turnOnBuzzer === 1) {
@@ -116,8 +114,10 @@ parser.on('data', data => {
     console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
 })
 
-port.on('open', () => {
+port.on('open', async () => {
     console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
+
+    await getSetting()
 })
 
 port.on('close', () => {
