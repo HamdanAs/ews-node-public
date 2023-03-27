@@ -72,6 +72,8 @@ const telemetryCallback = (response) => {
 
     port.write(command)
 
+    console.log("[DEBUG] Command Terkirim:", command);
+
     buzzerOff = false;
 
     if (!timeoutIsTicking) {
