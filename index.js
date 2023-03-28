@@ -62,8 +62,9 @@ const checkInternetConnection = () => {
 };
 
 checkInternetConnection();
+let internetConnectionInterval
 
-setInterval(checkInternetConnection, 1000 * 60);
+internetConnectionInterval = setInterval(checkInternetConnection, 1000 * 60);
 
 const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`);
 const telemetryTopic = "EWS.telemetry";
@@ -94,8 +95,8 @@ const telemetryCallback = (response) => {
     }`
   );
 
-  turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
-  turnOnBuzzer = response.tma_level === 3 && buzzerOff ? 1 : 0;
+  turnOnIndicator = response.tma_level === 4 ? 0 : (response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : 2));
+  turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
 
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
 
@@ -106,6 +107,7 @@ const telemetryCallback = (response) => {
   if (!timeoutIsTicking && turnOnBuzzer === 1) {
     buzzerOff = false;
     timeoutIsTicking = true;
+    clearInterval(internetConnectionInterval)
 
     buzzerTimeout = setTimeout(() => {
       let command = `${turnOnIndicator},0,1,*`;
@@ -115,6 +117,8 @@ const telemetryCallback = (response) => {
       timeoutIsTicking = false;
 
       clearTimeout(buzzerTimeout);
+
+      internetConnectionInterval = setInterval(checkInternetConnection, 60 * 1000)
     }, parseInt(settings.timer_alarm) * 1000);
   }
 
