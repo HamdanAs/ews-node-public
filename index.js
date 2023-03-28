@@ -37,8 +37,6 @@ const port = new SerialPort({ path: serial, baudRate: 9600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 port.pipe(parser);
 
-port.write(`0,0,${isOnline ? 1 : 0},*`);
-
 const checkInternetConnection = () => {
   http
     .get("http://www.google.com/images/icons/product/chrome-48.png", (res) => {
@@ -150,6 +148,8 @@ port.on("open", async () => {
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
 
   await getSetting();
+
+  port.write(`0,0,${isOnline ? 1 : 0},*`);
 });
 
 port.on("close", () => {
