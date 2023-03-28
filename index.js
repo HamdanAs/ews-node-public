@@ -96,15 +96,8 @@ const telemetryCallback = (response) => {
     }`
   );
 
-  turnOnIndicator =
-    response.tma_level === 1
-      ? 3
-      : response.tma_level === 3
-      ? 1
-      : response.tma_level === 4
-      ? 0
-      : 2;
-  turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
+  turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
+  turnOnBuzzer = response.tma_level === 3 && buzzerOff ? 1 : 0;
 
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
 
@@ -112,9 +105,8 @@ const telemetryCallback = (response) => {
 
   console.log("[DEBUG] Command Terkirim:", command);
 
-  buzzerOff = false;
-
-  if (!timeoutIsTicking) {
+  if (!timeoutIsTicking && turnOnBuzzer === 1) {
+    buzzerOff = false;
     timeoutIsTicking = true;
 
     buzzerTimeout = setTimeout(() => {
@@ -204,7 +196,7 @@ mqttClient.on("message", (topic, message) => {
 
   if (topic === telemetryTopic) {
     io.emit("telemetry", response);
-    
+
     if (response.serial_number !== settings.iot_node) return;
 
     telemetryCallback(response);
