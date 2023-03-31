@@ -95,7 +95,7 @@ const telemetryCallback = (response) => {
     }`
   );
 
-  turnOnIndicator = response.tma_level === 4 ? 0 : (response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : 2));
+  turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
   turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
 
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
