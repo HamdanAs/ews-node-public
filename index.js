@@ -13,6 +13,12 @@ const serial = process.env.SERIAL_PORT;
 const backendUrl = process.env.BACKEND_URL;
 const serialNumber = process.env.SERIAL_NUMBER;
 const serverPort = process.env.PORT || 4001;
+const tmaMode = process.env.TMA_MODE || "NORMAL"
+
+const tmaModes = {
+  normal: "NORMAL",
+  reverse: "REVERSE"
+}
 
 let isOnline = false;
 let settings = {};
@@ -95,8 +101,13 @@ const telemetryCallback = (response) => {
     }`
   );
 
-  turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
-  turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
+  if (tmaMode === tmaModes.normal) {
+    turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
+    turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
+  } else if (tmaMode === tmaModes.reverse) {
+    turnOnIndicator = response.tma_level === 4 ? 0 : (response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : 2));
+    turnOnBuzzer = response.tma_level === 3 && buzzerOff ? 1 : 0;
+  }
 
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
 
