@@ -67,7 +67,6 @@ const checkInternetConnection = () => {
     });
 };
 
-checkInternetConnection();
 let internetConnectionInterval
 
 internetConnectionInterval = setInterval(checkInternetConnection, 1000 * 60);
@@ -164,7 +163,7 @@ port.on("open", async () => {
 
   await getSetting();
 
-  port.write(`0,0,${isOnline ? 1 : 0},*`);
+  checkInternetConnection();
 });
 
 port.on("close", () => {
