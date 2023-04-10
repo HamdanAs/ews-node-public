@@ -75,10 +75,20 @@ const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`);
 const telemetryTopic = "EWS.telemetry";
 const settingsTopic = "EWS.Settings." + serialNumber;
 
+const sendActiveStatus = () => {
+  mqttClient.publish(
+    `connection.${serialNumber}`,
+    JSON.stringify({ response: "ok" })
+  );
+}
+
+let sendActiveStatusInterval
+
 let buzzerTimeout;
 let buzzerDelay;
 let timeoutIsTicking = false;
 let delayIsTicking = false;
+let requestToPort = false;
 
 const telemetryCallback = (response) => {
   console.log(
@@ -143,6 +153,10 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerDelay);
     }, settings.delay_alarm * 60000);
   }
+
+  port.write("REQ,*")
+
+  requestToPort = true
 };
 
 const settingsCallback = (response) => {
@@ -155,10 +169,16 @@ const settingsCallback = (response) => {
 };
 
 parser.on("data", (data) => {
-  // console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
+  if (requestToPort) {
+    console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
+
+    requestToPort = false
+  }
 });
 
 port.on("open", async () => {
+  port.write("REQ,*")
+
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
 
   await getSetting();
@@ -183,6 +203,12 @@ mqttClient.on("connect", () => {
     new Date().toLocaleString() + " : [MQTT] Connected to MQTT Broker"
   );
   mqttClient.subscribe([telemetryTopic, settingsTopic]);
+
+  sendActiveStatus()
+
+  sendActiveStatusInterval = setInterval(() => {
+    sendActiveStatus()
+  }, 60000 * 5)
 });
 
 mqttClient.on("error", (err) => {
@@ -213,7 +239,14 @@ mqttClient.on("message", (topic, message) => {
 
     if (response.serial_number !== settings.iot_node) return;
 
-    telemetryCallback(response);
+    if (!timeoutIsTicking) {
+      telemetryCallback(response);
+    }
+
+    fetch({
+      method: "POST",
+      url: backendUrl + '/'
+    })
 
     mqttClient.publish(
       `connection.${serialNumber}`,
