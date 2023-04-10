@@ -209,8 +209,8 @@ port.on("error", (err) => {
   port.end();
 });
 
-const sendActiveStatus = () => {
-  mqttClient.publish(
+const sendActiveStatus = (client) => {
+  client.publish(
     `connection.${serialNumber}`,
     JSON.stringify({ response: "ok" })
   );
@@ -224,10 +224,10 @@ mqttClient.on("connect", () => {
   );
   mqttClient.subscribe([telemetryTopic, settingsTopic]);
 
-  sendActiveStatus();
+  sendActiveStatus(mqttClient);
 
   sendActiveStatusInterval = setInterval(() => {
-    sendActiveStatus();
+    sendActiveStatus(mqttClient);
   }, 60000 * 5);
 });
 
