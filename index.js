@@ -16,6 +16,8 @@ const serialNumber = process.env.SERIAL_NUMBER;
 const serverPort = process.env.PORT || 4001;
 const tmaMode = process.env.TMA_MODE || "NORMAL";
 
+console.log(backendUrl);
+
 const tmaModes = {
   normal: "NORMAL",
   reverse: "REVERSE",
@@ -148,7 +150,13 @@ const telemetryCallback = (response) => {
 
       exec("shutdown now", function (exception, output, err) {
         console.log(
+          new Date().toLocaleString() + " : [NODEJS] Shutdown Exception: " + exception
+        );
+        console.log(
           new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output
+        );
+        console.log(
+          new Date().toLocaleString() + " : [NODEJS] Shutdown error: " + err
         );
       });
     }, parseInt(settings.timer_alarm) * 1000);
@@ -262,11 +270,6 @@ mqttClient.on("message", (topic, message) => {
     if (!timeoutIsTicking) {
       telemetryCallback(response);
     }
-
-    fetch({
-      method: "POST",
-      url: backendUrl + "/",
-    });
 
     mqttClient.publish(
       `connection.${serialNumber}`,
