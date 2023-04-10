@@ -76,15 +76,6 @@ const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`);
 const telemetryTopic = "EWS.telemetry";
 const settingsTopic = "EWS.Settings." + serialNumber;
 
-const sendActiveStatus = () => {
-  mqttClient.publish(
-    `connection.${serialNumber}`,
-    JSON.stringify({ response: "ok" })
-  );
-}
-
-let sendActiveStatusInterval
-
 let buzzerTimeout;
 let buzzerDelay;
 let timeoutIsTicking = false;
@@ -202,6 +193,15 @@ port.on("error", (err) => {
 
   port.end();
 });
+
+const sendActiveStatus = () => {
+  mqttClient.publish(
+    `connection.${serialNumber}`,
+    JSON.stringify({ response: "ok" })
+  );
+}
+
+let sendActiveStatusInterval
 
 mqttClient.on("connect", () => {
   console.log(
