@@ -3,7 +3,7 @@ const { ReadlineParser } = require("@serialport/parser-readline");
 const mqtt = require("mqtt");
 const http = require("http");
 const { Server } = require("socket.io");
-const exec = require('child_process').exec
+const exec = require("child_process").exec;
 
 require("dotenv").config();
 
@@ -14,12 +14,12 @@ const serial = process.env.SERIAL_PORT;
 const backendUrl = process.env.BACKEND_URL;
 const serialNumber = process.env.SERIAL_NUMBER;
 const serverPort = process.env.PORT || 4001;
-const tmaMode = process.env.TMA_MODE || "NORMAL"
+const tmaMode = process.env.TMA_MODE || "NORMAL";
 
 const tmaModes = {
   normal: "NORMAL",
-  reverse: "REVERSE"
-}
+  reverse: "REVERSE",
+};
 
 let isOnline = false;
 let settings = {};
@@ -68,7 +68,7 @@ const checkInternetConnection = () => {
     });
 };
 
-let internetConnectionInterval
+let internetConnectionInterval;
 
 internetConnectionInterval = setInterval(checkInternetConnection, 1000 * 60);
 
@@ -106,7 +106,14 @@ const telemetryCallback = (response) => {
     turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
     turnOnBuzzer = response.tma_level === 3 && buzzerOff ? 1 : 0;
   } else if (tmaMode === tmaModes.reverse) {
-    turnOnIndicator = response.tma_level === 4 ? 0 : (response.tma_level === 1 ? 3 : (response.tma_level === 3 ? 1 : 2));
+    turnOnIndicator =
+      response.tma_level === 4
+        ? 0
+        : response.tma_level === 1
+        ? 3
+        : response.tma_level === 3
+        ? 1
+        : 2;
     turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
   }
 
@@ -119,7 +126,7 @@ const telemetryCallback = (response) => {
   if (!timeoutIsTicking && turnOnBuzzer === 1) {
     buzzerOff = false;
     timeoutIsTicking = true;
-    clearInterval(internetConnectionInterval)
+    clearInterval(internetConnectionInterval);
 
     buzzerTimeout = setTimeout(() => {
       let command = `${turnOnIndicator},0,1,*`;
@@ -130,7 +137,20 @@ const telemetryCallback = (response) => {
 
       clearTimeout(buzzerTimeout);
 
-      internetConnectionInterval = setInterval(checkInternetConnection, 60 * 1000)
+      internetConnectionInterval = setInterval(
+        checkInternetConnection,
+        60 * 1000
+      );
+
+      port.write("REQ,*");
+
+      requestToPort = true;
+
+      exec("shutdown now", function (exception, output, err) {
+        console.log(
+          new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output
+        );
+      });
     }, parseInt(settings.timer_alarm) * 1000);
   }
 
@@ -145,14 +165,6 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerDelay);
     }, settings.delay_alarm * 60000);
   }
-
-  port.write("REQ,*")
-
-  requestToPort = true
-
-  exec("shutdown now", function (exception, output, err) {
-    console.log(new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output);
-  })
 };
 
 const settingsCallback = (response) => {
@@ -166,14 +178,17 @@ const settingsCallback = (response) => {
 
 parser.on("data", (data) => {
   if (requestToPort) {
-    console.log(new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:", data);
+    console.log(
+      new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:",
+      data
+    );
 
-    requestToPort = false
+    requestToPort = false;
   }
 });
 
 port.on("open", async () => {
-  port.write("REQ,*")
+  port.write("REQ,*");
 
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
 
@@ -199,9 +214,9 @@ const sendActiveStatus = () => {
     `connection.${serialNumber}`,
     JSON.stringify({ response: "ok" })
   );
-}
+};
 
-let sendActiveStatusInterval
+let sendActiveStatusInterval;
 
 mqttClient.on("connect", () => {
   console.log(
@@ -209,11 +224,11 @@ mqttClient.on("connect", () => {
   );
   mqttClient.subscribe([telemetryTopic, settingsTopic]);
 
-  sendActiveStatus()
+  sendActiveStatus();
 
   sendActiveStatusInterval = setInterval(() => {
-    sendActiveStatus()
-  }, 60000 * 5)
+    sendActiveStatus();
+  }, 60000 * 5);
 });
 
 mqttClient.on("error", (err) => {
@@ -250,8 +265,8 @@ mqttClient.on("message", (topic, message) => {
 
     fetch({
       method: "POST",
-      url: backendUrl + '/'
-    })
+      url: backendUrl + "/",
+    });
 
     mqttClient.publish(
       `connection.${serialNumber}`,
