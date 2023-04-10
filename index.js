@@ -84,6 +84,20 @@ let timeoutIsTicking = false;
 let delayIsTicking = false;
 let requestToPort = false;
 
+const shutdown = () => {
+  exec("shutdown now", function (exception, output, err) {
+    console.log(
+      new Date().toLocaleString() + " : [NODEJS] Shutdown Exception: " + exception
+    );
+    console.log(
+      new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output
+    );
+    console.log(
+      new Date().toLocaleString() + " : [NODEJS] Shutdown error: " + err
+    );
+  });
+} 
+
 const telemetryCallback = (response) => {
   console.log(
     `${new Date().toLocaleString()} : [MQTT] Status Siaga: ${
@@ -148,17 +162,7 @@ const telemetryCallback = (response) => {
 
       requestToPort = true;
 
-      exec("shutdown now", function (exception, output, err) {
-        console.log(
-          new Date().toLocaleString() + " : [NODEJS] Shutdown Exception: " + exception
-        );
-        console.log(
-          new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output
-        );
-        console.log(
-          new Date().toLocaleString() + " : [NODEJS] Shutdown error: " + err
-        );
-      });
+      shutdown()
     }, parseInt(settings.timer_alarm) * 1000);
   }
 
