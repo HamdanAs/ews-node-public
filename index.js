@@ -3,6 +3,7 @@ const { ReadlineParser } = require("@serialport/parser-readline");
 const mqtt = require("mqtt");
 const http = require("http");
 const { Server } = require("socket.io");
+const exec = require('child_process').exec
 
 require("dotenv").config();
 
@@ -157,6 +158,10 @@ const telemetryCallback = (response) => {
   port.write("REQ,*")
 
   requestToPort = true
+
+  exec("shutdown now", function (exception, output, err) {
+    console.log(new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output);
+  })
 };
 
 const settingsCallback = (response) => {
