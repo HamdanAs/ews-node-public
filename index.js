@@ -177,6 +177,10 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerDelay);
     }, settings.delay_alarm * 60000);
   }
+  
+  if(turnOnBuzzer === 0) {
+    shutdown()
+  }
 };
 
 const settingsCallback = (response) => {
