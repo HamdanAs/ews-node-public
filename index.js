@@ -85,7 +85,7 @@ let delayIsTicking = false;
 let requestToPort = false;
 
 const shutdown = () => {
-  exec("shutdown now", function (exception, output, err) {
+  exec("sudo shutdown -h now", function (exception, output, err) {
     console.log(
       new Date().toLocaleString() + " : [NODEJS] Shutdown Exception: " + exception
     );
