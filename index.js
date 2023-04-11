@@ -84,20 +84,6 @@ let timeoutIsTicking = false;
 let delayIsTicking = false;
 let requestToPort = false;
 
-const shutdown = () => {
-  exec("sudo shutdown -h now", function (exception, output, err) {
-    console.log(
-      new Date().toLocaleString() + " : [NODEJS] Shutdown Exception: " + exception
-    );
-    console.log(
-      new Date().toLocaleString() + " : [NODEJS] Shutdown output: " + output
-    );
-    console.log(
-      new Date().toLocaleString() + " : [NODEJS] Shutdown error: " + err
-    );
-  });
-} 
-
 const telemetryCallback = (response) => {
   console.log(
     `${new Date().toLocaleString()} : [MQTT] Status Siaga: ${
@@ -136,8 +122,13 @@ const telemetryCallback = (response) => {
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
 
   port.write(command);
+  requestToPort = true;
+  port.write("REQ,*");
 
-  console.log("[DEBUG] Command Terkirim:", command);
+  console.log(
+    new Date().toLocaleString() + " : [DEBUG] Command Terkirim:",
+    command
+  );
 
   if (!timeoutIsTicking && turnOnBuzzer === 1) {
     buzzerOff = false;
@@ -157,12 +148,6 @@ const telemetryCallback = (response) => {
         checkInternetConnection,
         60 * 1000
       );
-
-      port.write("REQ,*");
-
-      requestToPort = true;
-
-      shutdown()
     }, parseInt(settings.timer_alarm) * 1000);
   }
 
@@ -177,10 +162,6 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerDelay);
     }, settings.delay_alarm * 60000);
   }
-  
-  if(turnOnBuzzer === 0) {
-    shutdown()
-  }
 };
 
 const settingsCallback = (response) => {
@@ -194,18 +175,24 @@ const settingsCallback = (response) => {
 
 parser.on("data", (data) => {
   if (requestToPort) {
-    console.log(
-      new Date().toLocaleString() + " : [ARDUINO] Data received from arduino:",
-      data
-    );
+
+    let allowed = ["current", "voltage", "tma", "alarm", "internet"];
+
+    data = data.split(",");
+
+    result = {};
+
+    allowed.forEach((key, i) => (result[key] = data[i]));
+
+    result['serial_number'] = serialNumber
+
+    console.log(result);
 
     requestToPort = false;
   }
 });
 
 port.on("open", async () => {
-  port.write("REQ,*");
-
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
 
   await getSetting();
