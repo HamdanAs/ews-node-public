@@ -82,7 +82,6 @@ let buzzerTimeout;
 let buzzerDelay;
 let timeoutIsTicking = false;
 let delayIsTicking = false;
-let requestToPort = false;
 
 const telemetryCallback = (response) => {
   console.log(
@@ -122,8 +121,6 @@ const telemetryCallback = (response) => {
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
 
   port.write(command);
-  requestToPort = true;
-  port.write("REQ,*");
 
   console.log(
     new Date().toLocaleString() + " : [DEBUG] Command Terkirim:",
@@ -174,22 +171,7 @@ const settingsCallback = (response) => {
 };
 
 parser.on("data", (data) => {
-  if (requestToPort) {
-
-    let allowed = ["current", "voltage", "tma", "alarm", "internet"];
-
-    data = data.split(",");
-
-    result = {};
-
-    allowed.forEach((key, i) => (result[key] = data[i]));
-
-    result['serial_number'] = serialNumber
-
-    console.log(result);
-
-    requestToPort = false;
-  }
+  
 });
 
 port.on("open", async () => {
