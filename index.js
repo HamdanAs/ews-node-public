@@ -28,6 +28,10 @@ let settings = {};
 let buzzerOff = true;
 let turnOnIndicator = 0;
 let turnOnBuzzer = 0;
+let buzzerTimeout;
+let buzzerDelay;
+let timeoutIsTicking = false;
+let delayIsTicking = false;
 
 const server = http.createServer();
 const io = new Server(server, {
@@ -77,11 +81,6 @@ internetConnectionInterval = setInterval(checkInternetConnection, 1000 * 60);
 const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`);
 const telemetryTopic = "EWS.telemetry";
 const settingsTopic = "EWS.Settings." + serialNumber;
-
-let buzzerTimeout;
-let buzzerDelay;
-let timeoutIsTicking = false;
-let delayIsTicking = false;
 
 const telemetryCallback = (response) => {
   console.log(
