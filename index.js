@@ -200,12 +200,7 @@ const sendActiveStatus = (client) => {
   );
 };
 
-let sendActiveStatusInterval;
-
-mqttClient.on("connect", () => {
-  console.log(
-    new Date().toLocaleString() + " : [MQTT] Connected to MQTT Broker"
-  );
+const onConnected = () => {
   mqttClient.subscribe([telemetryTopic, settingsTopic]);
 
   sendActiveStatus(mqttClient);
@@ -213,6 +208,20 @@ mqttClient.on("connect", () => {
   sendActiveStatusInterval = setInterval(() => {
     sendActiveStatus(mqttClient);
   }, 60000 * 5);
+}
+
+let sendActiveStatusInterval;
+
+mqttClient.on("connect", () => {
+  console.log(
+    new Date().toLocaleString() + " : [MQTT] Connecting to MQTT Broker"
+  );
+
+  onConnected()
+
+  console.log(
+    new Date().toLocaleString() + " : [MQTT] Connected to MQTT Broker"
+  );
 });
 
 mqttClient.on("error", (err) => {
@@ -229,6 +238,12 @@ mqttClient.on("disconnect", () => {
 
 mqttClient.on("reconnect", () => {
   console.log(new Date().toLocaleString() + " : [MQTT] Reconnecting . . . ");
+
+  onConnected()
+
+  console.log(
+    new Date().toLocaleString() + " : [MQTT] Connected to MQTT Broker"
+  );
 });
 
 mqttClient.on("message", (topic, message) => {
