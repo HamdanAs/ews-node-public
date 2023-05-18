@@ -169,9 +169,7 @@ const settingsCallback = (response) => {
   buzzerOff = true;
 };
 
-parser.on("data", (data) => {
-  
-});
+parser.on("data", (data) => {});
 
 port.on("open", async () => {
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
@@ -208,7 +206,7 @@ const onConnected = () => {
   sendActiveStatusInterval = setInterval(() => {
     sendActiveStatus(mqttClient);
   }, 60000 * 5);
-}
+};
 
 let sendActiveStatusInterval;
 
@@ -217,7 +215,7 @@ mqttClient.on("connect", () => {
     new Date().toLocaleString() + " : [MQTT] Connecting to MQTT Broker"
   );
 
-  onConnected()
+  onConnected();
 
   console.log(
     new Date().toLocaleString() + " : [MQTT] Connected to MQTT Broker"
@@ -238,12 +236,6 @@ mqttClient.on("disconnect", () => {
 
 mqttClient.on("reconnect", () => {
   console.log(new Date().toLocaleString() + " : [MQTT] Reconnecting . . . ");
-
-  onConnected()
-
-  console.log(
-    new Date().toLocaleString() + " : [MQTT] Connected to MQTT Broker"
-  );
 });
 
 mqttClient.on("message", (topic, message) => {
@@ -256,7 +248,11 @@ mqttClient.on("message", (topic, message) => {
   if (topic === telemetryTopic) {
     io.emit("telemetry", response);
 
+    console.log(response);
+
     if (response.serial_number !== settings.iot_node) return;
+
+    console.log("Response serial dan setting sama");
 
     if (!timeoutIsTicking) {
       telemetryCallback(response);
