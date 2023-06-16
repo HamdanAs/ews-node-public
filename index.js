@@ -88,7 +88,7 @@ const telemetryCallback = (response) => {
   if (!timeoutIsTicking && turnOnBuzzer === 1) {
     buzzerOff = false;
     timeoutIsTicking = true;
-    clearInterval(sendActiveStatusInterval)
+    clearInterval(sendActiveStatusInterval);
 
     buzzerTimeout = setTimeout(() => {
       let command = `${turnOnIndicator},0,1,*`;
@@ -99,10 +99,12 @@ const telemetryCallback = (response) => {
 
       clearTimeout(buzzerTimeout);
 
-      sendActiveStatusInterval = setInterval(() => sendActiveStatus(mqttClient), 60000 * 20)
-      
-      turnOnBuzzer = 0;
+      sendActiveStatusInterval = setInterval(
+        () => sendActiveStatus(mqttClient),
+        60000 * 20
+      );
 
+      turnOnBuzzer = 0;
     }, parseInt(settings.timer_alarm) * 1000);
   }
 
@@ -152,11 +154,19 @@ const sendActiveStatus = (client) => {
 };
 
 const onConnected = () => {
-  mqttClient.subscribe([telemetryTopic, settingsTopic, connectionTopic, directSerialTopic]);
+  mqttClient.subscribe([
+    telemetryTopic,
+    settingsTopic,
+    connectionTopic,
+    directSerialTopic,
+  ]);
 
-  mqttClient.publish('request-setting', JSON.stringify({ serial_number: serialNumber }))
+  mqttClient.publish(
+    "request-setting",
+    JSON.stringify({ serial_number: serialNumber })
+  );
 
-  sendActiveStatus(mqttClient)
+  sendActiveStatus(mqttClient);
 
   sendActiveStatusInterval = setInterval(() => {
     sendActiveStatus(mqttClient);
@@ -167,10 +177,10 @@ mqttClient.on("connect", () => {
   console.log(
     new Date().toLocaleString() + " : [MQTT] Connecting to MQTT Broker"
   );
-  
+
   turnOnIndicator = 0;
   turnOnBuzzer = 0;
-  
+
   onConnected();
 
   console.log(
@@ -212,8 +222,7 @@ mqttClient.on("message", (topic, message) => {
       telemetryCallback(response);
     }
 
-    sendActiveStatus(mqttClient)
-
+    sendActiveStatus(mqttClient);
   } else if (topic === settingsTopic) {
     console.log(response);
 
@@ -223,43 +232,48 @@ mqttClient.on("message", (topic, message) => {
       JSON.stringify({ response: "ok" })
     );
   } else if (topic === connectionTopic) {
-    port.write(`${turnOnIndicator},${turnOnBuzzer},1,*`)
+    port.write(`${turnOnIndicator},${turnOnBuzzer},1,*`);
   } else if (topic === directSerialTopic) {
     console.log(response);
-    port.write(`${response.status},${response.alarm},${response.internet},*`)
+    port.write(`${response.status},${response.alarm},${response.internet},*`);
   }
 });
 
-process.stdin.resume();//so the program will not close instantly
+process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, exitCode) {
-    if (options.cleanup) {
-      console.log(new Date().toLocaleString() + " : [DEBUG] Sedang melakukan pembersihan sebelum program dimatikan ...");
-      console.log(new Date().toLocaleString() + " : [DEBUG] Menutup serial port ...");
+  if (options.cleanup) {
+    console.log(
+      new Date().toLocaleString() +
+        " : [DEBUG] Sedang melakukan pembersihan sebelum program dimatikan ..."
+    );
+    console.log(
+      new Date().toLocaleString() + " : [DEBUG] Menutup serial port ..."
+    );
 
-      setTimeout(() => {
-        port.write("0,0,0,*");
-        port.close()
-      }, 1000)
+    port.write("0,0,0,*");
+    port.end()
 
-      console.log(new Date().toLocaleString() + " : [DEBUG] Menutup MQTT Client ...");
-      
-      setTimeout(() => mqttClient.end(), 1000)
-    }
+    console.log(
+      new Date().toLocaleString() + " : [DEBUG] Menutup MQTT Client ..."
+    );
 
-    if (exitCode || exitCode === 0) console.log(exitCode);
-    if (options.exit) process.exit();
+    mqttClient.end();
+  }
+
+  if (exitCode || exitCode === 0) console.log(exitCode);
+  if (options.exit) process.exit();
 }
 
 //do something when app is closing
-process.on('exit', exitHandler.bind(null,{cleanup:true}));
+process.on("exit", exitHandler.bind(null, { cleanup: true }));
 
 //catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+process.on("SIGINT", exitHandler.bind(null, { exit: true }));
 
 // catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
-process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+process.on("SIGUSR1", exitHandler.bind(null, { exit: true }));
+process.on("SIGUSR2", exitHandler.bind(null, { exit: true }));
 
 //catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+process.on("uncaughtException", exitHandler.bind(null, { exit: true }));
