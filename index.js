@@ -121,6 +121,9 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerDelay);
     }, settings.delay_alarm * 60000);
   }
+
+  turnOnIndicator = 0;
+  turnOnBuzzer = 0;
 };
 
 const settingsCallback = (response) => {
