@@ -1,6 +1,7 @@
 const serialport = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const mqtt = require("mqtt");
+const exec = require("child_process").exec;
 
 require("dotenv").config();
 
@@ -40,6 +41,7 @@ const telemetryTopic = "EWS.telemetry";
 const settingsTopic = "EWS.Settings." + serialNumber;
 const connectionTopic = "EWS.Connection." + serialNumber;
 const directSerialTopic = "EWS.DirectSerial." + serialNumber;
+const commandTopic = "EWS.Command." + serialNumber;
 
 const telemetryCallback = (response) => {
   console.log(
@@ -75,7 +77,7 @@ const telemetryCallback = (response) => {
         : response.tma_level === 1
         ? 3
         : 0;
-        
+
     turnOnBuzzer = turnOnIndicator === 1 && buzzerOff ? 1 : 0;
   }
 
@@ -162,6 +164,7 @@ const onConnected = () => {
     settingsTopic,
     connectionTopic,
     directSerialTopic,
+    commandTopic,
   ]);
 
   mqttClient.publish(
@@ -215,9 +218,9 @@ mqttClient.on("message", (topic, message) => {
   let response = JSON.parse(message.toString());
 
   if (topic === telemetryTopic) {
-    console.log(response);
-
     if (response.serial_number !== settings.iot_node) return;
+
+    console.log(response);
 
     console.log("Response serial dan setting sama");
 
@@ -239,6 +242,21 @@ mqttClient.on("message", (topic, message) => {
   } else if (topic === directSerialTopic) {
     console.log(response);
     port.write(`${response.status},${response.alarm},${response.internet},*`);
+  } else if (topic === commandTopic) {
+    console.log(response);
+    exec(response.command, function (exception, output, err) {
+      console.log(
+        new Date().toLocaleString() +
+          " : [NODEJS] Command Exception: " +
+          exception
+      );
+      console.log(
+        new Date().toLocaleString() + " : [NODEJS] Command output: " + output
+      );
+      console.log(
+        new Date().toLocaleString() + " : [NODEJS] Command error: " + err
+      );
+    });
   }
 });
 
@@ -248,17 +266,17 @@ function exitHandler(options, exitCode) {
   if (options.cleanup) {
     console.log(
       new Date().toLocaleString() +
-        " : [DEBUG] Sedang melakukan pembersihan sebelum program dimatikan ..."
+        " : [NODEJS] Sedang melakukan pembersihan sebelum program dimatikan ..."
     );
     console.log(
-      new Date().toLocaleString() + " : [DEBUG] Menutup serial port ..."
+      new Date().toLocaleString() + " : [NODEJS] Menutup serial port ..."
     );
 
     port.write("0,0,0,*");
     port.end();
 
     console.log(
-      new Date().toLocaleString() + " : [DEBUG] Menutup MQTT Client ..."
+      new Date().toLocaleString() + " : [NODEJS] Menutup MQTT Client ..."
     );
 
     mqttClient.end();
