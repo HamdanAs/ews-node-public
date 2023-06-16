@@ -110,6 +110,8 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerTimeout);
 
       sendActiveStatusInterval = setInterval(() => sendActiveStatus(mqttClient), 60000 * 1)
+      
+      turnOnBuzzer = 0;
 
     }, parseInt(settings.timer_alarm) * 1000);
   }
@@ -125,9 +127,6 @@ const telemetryCallback = (response) => {
       clearTimeout(buzzerDelay);
     }, settings.delay_alarm * 60000);
   }
-
-  turnOnIndicator = 0;
-  turnOnBuzzer = 0;
 };
 
 const settingsCallback = (response) => {
