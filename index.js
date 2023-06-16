@@ -1,9 +1,6 @@
 const serialport = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const mqtt = require("mqtt");
-const http = require("http");
-const { Server } = require("socket.io");
-const exec = require("child_process").exec;
 
 require("dotenv").config();
 
@@ -13,7 +10,6 @@ const mqttPort = process.env.MQTT_PORT;
 const serial = process.env.SERIAL_PORT;
 const backendUrl = process.env.BACKEND_URL;
 const serialNumber = process.env.SERIAL_NUMBER;
-const serverPort = process.env.PORT || 4001;
 const tmaMode = process.env.TMA_MODE || "NORMAL";
 const baudRate = parseInt(process.env.BAUD_RATE);
 
@@ -34,13 +30,6 @@ let buzzerDelay;
 let timeoutIsTicking = false;
 let delayIsTicking = false;
 let sendActiveStatusInterval;
-
-const server = http.createServer();
-const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-  },
-});
 
 const port = new SerialPort({ path: serial, baudRate: baudRate });
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
@@ -210,8 +199,6 @@ mqttClient.on("message", (topic, message) => {
   let response = JSON.parse(message.toString());
 
   if (topic === telemetryTopic) {
-    io.emit("telemetry", response);
-
     console.log(response);
 
     if (response.serial_number !== settings.iot_node) return;
@@ -238,16 +225,4 @@ mqttClient.on("message", (topic, message) => {
     console.log(response);
     port.write(`${response.status},${response.alarm},${response.internet},*`)
   }
-});
-
-io.on("connection", (socket) => {
-  console.log("New Client Connected");
-
-  socket.on("disconnect", () => {
-    console.log("Client Disconnected");
-  });
-});
-
-server.listen(serverPort, () => {
-  console.log(`Server berjalan di http://localhost:${serverPort}`);
 });
