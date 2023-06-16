@@ -99,7 +99,7 @@ const telemetryCallback = (response) => {
 
       clearTimeout(buzzerTimeout);
 
-      sendActiveStatusInterval = setInterval(() => sendActiveStatus(mqttClient), 60000 * 1)
+      sendActiveStatusInterval = setInterval(() => sendActiveStatus(mqttClient), 60000 * 20)
       
       turnOnBuzzer = 0;
 
@@ -160,7 +160,7 @@ const onConnected = () => {
 
   sendActiveStatusInterval = setInterval(() => {
     sendActiveStatus(mqttClient);
-  }, 60000 * 1);
+  }, 60000 * 20);
 };
 
 mqttClient.on("connect", () => {
