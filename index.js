@@ -50,6 +50,7 @@ const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`);
 const telemetryTopic = "EWS.telemetry";
 const settingsTopic = "EWS.Settings." + serialNumber;
 const connectionTopic = "EWS.Connection." + serialNumber;
+const directSerialTopic = "EWS.DirectSerial." + serialNumber;
 
 const telemetryCallback = (response) => {
   console.log(
@@ -162,7 +163,7 @@ const sendActiveStatus = (client) => {
 };
 
 const onConnected = () => {
-  mqttClient.subscribe([telemetryTopic, settingsTopic, connectionTopic]);
+  mqttClient.subscribe([telemetryTopic, settingsTopic, connectionTopic, directSerialTopic]);
 
   mqttClient.publish('request-setting', JSON.stringify({ serial_number: serialNumber }))
 
@@ -222,7 +223,7 @@ mqttClient.on("message", (topic, message) => {
     }
 
     sendActiveStatus(mqttClient)
-    
+
   } else if (topic === settingsTopic) {
     console.log(response);
 
@@ -233,6 +234,8 @@ mqttClient.on("message", (topic, message) => {
     );
   } else if (topic === connectionTopic) {
     port.write(`${turnOnIndicator},${turnOnBuzzer},1,*`)
+  } else if (topic === directSerialTopic) {
+    console.log(response);
   }
 });
 
