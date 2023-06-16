@@ -66,13 +66,16 @@ const telemetryCallback = (response) => {
     turnOnBuzzer = turnOnIndicator === 3 && buzzerOff ? 1 : 0;
   } else if (tmaMode === tmaModes.reverse) {
     turnOnIndicator =
-      response.tma_level === 4
+      response.tma_level === 2
+        ? 2
+        : response.tma_level === 4
         ? 0
-        : response.tma_level === 1
-        ? 3
         : response.tma_level === 3
         ? 1
-        : 2;
+        : response.tma_level === 1
+        ? 3
+        : 0;
+        
     turnOnBuzzer = turnOnIndicator === 1 && buzzerOff ? 1 : 0;
   }
 
@@ -252,7 +255,7 @@ function exitHandler(options, exitCode) {
     );
 
     port.write("0,0,0,*");
-    port.end()
+    port.end();
 
     console.log(
       new Date().toLocaleString() + " : [DEBUG] Menutup MQTT Client ..."
