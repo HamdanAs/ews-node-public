@@ -104,7 +104,7 @@ const telemetryCallback = (response) => {
 
   if (tmaMode === tmaModes.normal) {
     turnOnIndicator = response.tma_level === 4 ? 0 : response.tma_level;
-    turnOnBuzzer = response.tma_level === 3 && buzzerOff ? 1 : 0;
+    turnOnBuzzer = turnOnIndicator === 3 && buzzerOff ? 1 : 0;
   } else if (tmaMode === tmaModes.reverse) {
     turnOnIndicator =
       response.tma_level === 2
@@ -116,8 +116,8 @@ const telemetryCallback = (response) => {
         : response.tma_level === 1
         ? 3
         : 0;
-        
-    turnOnBuzzer = response.tma_level === 1 && buzzerOff ? 1 : 0;
+
+    turnOnBuzzer = turnOnIndicator === 1 && buzzerOff ? 1 : 0;
   }
 
   let command = `${turnOnIndicator},${turnOnBuzzer},1,*`;
