@@ -220,6 +220,9 @@ mqttClient.on("message", (topic, message) => {
     if (!timeoutIsTicking) {
       telemetryCallback(response);
     }
+
+    sendActiveStatus(mqttClient)
+    
   } else if (topic === settingsTopic) {
     console.log(response);
 
