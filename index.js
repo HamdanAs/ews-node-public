@@ -237,6 +237,7 @@ mqttClient.on("message", (topic, message) => {
       `connection.${serialNumber}`,
       JSON.stringify({ response: "ok" })
     );
+    
   } else if (topic === connectionTopic) {
     port.write(`${turnOnIndicator},${turnOnBuzzer},1,*`);
   } else if (topic === directSerialTopic) {
