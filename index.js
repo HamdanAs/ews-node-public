@@ -33,6 +33,7 @@ let buzzerTimeout;
 let buzzerDelay;
 let timeoutIsTicking = false;
 let delayIsTicking = false;
+let sendActiveStatusInterval;
 
 const server = http.createServer();
 const io = new Server(server, {
@@ -97,6 +98,7 @@ const telemetryCallback = (response) => {
   if (!timeoutIsTicking && turnOnBuzzer === 1) {
     buzzerOff = false;
     timeoutIsTicking = true;
+    clearInterval(sendActiveStatusInterval)
 
     buzzerTimeout = setTimeout(() => {
       let command = `${turnOnIndicator},0,1,*`;
@@ -106,6 +108,8 @@ const telemetryCallback = (response) => {
       timeoutIsTicking = false;
 
       clearTimeout(buzzerTimeout);
+
+      sendActiveStatusInterval = setInterval(() => sendActiveStatus(mqttClient), 60000 * 1)
 
     }, parseInt(settings.timer_alarm) * 1000);
   }
@@ -167,10 +171,8 @@ const onConnected = () => {
 
   sendActiveStatusInterval = setInterval(() => {
     sendActiveStatus(mqttClient);
-  }, 60000 * 5);
+  }, 60000 * 1);
 };
-
-let sendActiveStatusInterval;
 
 mqttClient.on("connect", () => {
   console.log(
@@ -219,11 +221,6 @@ mqttClient.on("message", (topic, message) => {
     if (!timeoutIsTicking) {
       telemetryCallback(response);
     }
-
-    mqttClient.publish(
-      `connection.${serialNumber}`,
-      JSON.stringify({ response: "ok" })
-    );
   } else if (topic === settingsTopic) {
     console.log(response);
 
