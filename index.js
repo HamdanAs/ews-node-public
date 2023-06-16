@@ -236,6 +236,7 @@ mqttClient.on("message", (topic, message) => {
     port.write(`${turnOnIndicator},${turnOnBuzzer},1,*`)
   } else if (topic === directSerialTopic) {
     console.log(response);
+    port.write(`${response.status},${response.alarm},${response.internet},*`)
   }
 });
 
