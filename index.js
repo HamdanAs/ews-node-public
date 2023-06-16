@@ -41,47 +41,14 @@ const io = new Server(server, {
   },
 });
 
-const getSetting = async () => {
-  await fetch(`${backendUrl}/public-node/setting/${serialNumber}`)
-    .then((res) => res.json())
-    .then((res) => (settings = res.settings));
-};
-
 const port = new SerialPort({ path: serial, baudRate: baudRate });
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 port.pipe(parser);
 
-const checkInternetConnection = () => {
-  http
-    .get("http://www.google.com/images/icons/product/chrome-48.png", (res) => {
-      isOnline = res.statusCode === 200;
-
-      port.write(`${turnOnIndicator},0,${isOnline ? 1 : 0},*`);
-
-      console.log(
-        new Date().toLocaleString() + " : [NODEJS] Koneksi Internet:",
-        isOnline
-      );
-    })
-    .on("error", (err) => {
-      isOnline = false;
-
-      port.write(`0,0,0,*`);
-
-      console.log(
-        new Date().toLocaleString() + " : [NODEJS] Koneksi Internet Error:",
-        err
-      );
-    });
-};
-
-let internetConnectionInterval;
-
-internetConnectionInterval = setInterval(checkInternetConnection, 1000 * 60);
-
 const mqttClient = mqtt.connect(`mqtt://${mqttHost}:${mqttPort}`);
 const telemetryTopic = "EWS.telemetry";
 const settingsTopic = "EWS.Settings." + serialNumber;
+const connectionTopic = "EWS.Connection." + serialNumber;
 
 const telemetryCallback = (response) => {
   console.log(
@@ -130,7 +97,6 @@ const telemetryCallback = (response) => {
   if (!timeoutIsTicking && turnOnBuzzer === 1) {
     buzzerOff = false;
     timeoutIsTicking = true;
-    clearInterval(internetConnectionInterval);
 
     buzzerTimeout = setTimeout(() => {
       let command = `${turnOnIndicator},0,1,*`;
@@ -141,10 +107,6 @@ const telemetryCallback = (response) => {
 
       clearTimeout(buzzerTimeout);
 
-      internetConnectionInterval = setInterval(
-        checkInternetConnection,
-        60 * 1000
-      );
     }, parseInt(settings.timer_alarm) * 1000);
   }
 
@@ -170,8 +132,6 @@ const settingsCallback = (response) => {
   buzzerOff = true;
 };
 
-parser.on("data", (data) => {});
-
 port.on("open", () => {
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
 });
@@ -196,7 +156,7 @@ const sendActiveStatus = (client) => {
 };
 
 const onConnected = () => {
-  mqttClient.subscribe([telemetryTopic, settingsTopic]);
+  mqttClient.subscribe([telemetryTopic, settingsTopic, connectionTopic]);
 
   mqttClient.publish('request-setting', JSON.stringify({ serial_number: serialNumber }))
 
@@ -269,6 +229,8 @@ mqttClient.on("message", (topic, message) => {
       `connection.${serialNumber}`,
       JSON.stringify({ response: "ok" })
     );
+  } else if (topic === connectionTopic) {
+    port.write(`${turnOnIndicator},${turnOnBuzzer},1,*`)
   }
 });
 
