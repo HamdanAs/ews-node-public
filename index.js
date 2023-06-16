@@ -15,6 +15,7 @@ const backendUrl = process.env.BACKEND_URL;
 const serialNumber = process.env.SERIAL_NUMBER;
 const serverPort = process.env.PORT || 4001;
 const tmaMode = process.env.TMA_MODE || "NORMAL";
+const baudRate = parseInt(process.env.BAUD_RATE);
 
 console.log(backendUrl);
 
@@ -200,6 +201,8 @@ const sendActiveStatus = (client) => {
 
 const onConnected = () => {
   mqttClient.subscribe([telemetryTopic, settingsTopic]);
+
+  mqttClient.publish('request-setting', JSON.stringify({ serial_number: serialNumber }))
 
   sendActiveStatus(mqttClient);
 
