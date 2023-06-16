@@ -172,12 +172,8 @@ const settingsCallback = (response) => {
 
 parser.on("data", (data) => {});
 
-port.on("open", async () => {
+port.on("open", () => {
   console.log(new Date().toLocaleString() + " : [SERIAL PORT] Connected . . .");
-
-  await getSetting();
-
-  checkInternetConnection();
 });
 
 port.on("close", () => {
