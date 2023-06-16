@@ -156,6 +156,8 @@ const onConnected = () => {
 
   mqttClient.publish('request-setting', JSON.stringify({ serial_number: serialNumber }))
 
+  sendActiveStatus(mqttClient)
+
   sendActiveStatusInterval = setInterval(() => {
     sendActiveStatus(mqttClient);
   }, 60000 * 20);
@@ -168,7 +170,7 @@ mqttClient.on("connect", () => {
   
   turnOnIndicator = 0;
   turnOnBuzzer = 0;
-
+  
   onConnected();
 
   console.log(
@@ -178,22 +180,18 @@ mqttClient.on("connect", () => {
 
 mqttClient.on("error", (err) => {
   console.log(new Date().toLocaleString() + " : [MQTT] Error:", err);
-  port.write("0,0,0,*")
 });
 
 mqttClient.on("close", () => {
   console.log(new Date().toLocaleString() + " : [MQTT] Closed");
-  port.write("0,0,0,*")
 });
 
 mqttClient.on("disconnect", () => {
   console.log(new Date().toLocaleString() + " : [MQTT] Disconnected");
-  port.write("0,0,0,*")
 });
 
 mqttClient.on("reconnect", () => {
   console.log(new Date().toLocaleString() + " : [MQTT] Reconnecting . . . ");
-  port.write("0,0,0,*")
 });
 
 mqttClient.on("message", (topic, message) => {
