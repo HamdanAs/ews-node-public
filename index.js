@@ -47,7 +47,7 @@ const getSetting = async () => {
     .then((res) => (settings = res.settings));
 };
 
-const port = new SerialPort({ path: serial, baudRate: 9600 });
+const port = new SerialPort({ path: serial, baudRate: baudRate });
 const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 port.pipe(parser);
 
